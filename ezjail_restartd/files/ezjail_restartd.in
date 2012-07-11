@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+#
+#
+
+# PROVIDE: ezjail_restartd
+# REQUIRE: ezjail
+
+# Add the following line to /etc/rc.conf to enable ezjail_restartd:
+# ezjail_restartd_enable="YES"
+
+. /etc/rc.subr
+
+name="ezjail_restartd"
+rcvar=ezjail_restartd_enable
+
+load_rc_config ${name}
+
+ezjail_cfgs="%%PREFIX%%/etc/ezjail"
+required_dirs="${ezjail_cfgs}"
+
+ezjail_restartd_find_jails() {
+    find -X ${ezjail_cfgs} -maxdepth 1 -type f \
+        -exec basename '{}' ';' 2>/dev/null | xargs
+}
+
+: ${ezjail_restartd_enable:=NO}
+: ${ezjail_restartd_trigger:="var/reboot/trigger"} 
+: ${ezjail_restartd_base:="/usr/jails"}
+: ${ezjail_restartd_admin_cmd:="%%PREFIX%%/bin/ezjail-admin"}
+: ${ezjail_restartd_jails:=`ezjail_restartd_find_jails`}
+
+
+pidfile="/var/run/${name}.pid"
+
+command="%%PREFIX%%/sbin/${name}"
+command_args="-p ${pidfile} -t ${ezjail_restartd_trigger} \
+              -b ${ezjail_restartd_base} -a ${ezjail_restartd_admin_cmd} \
+              ${ezjail_restartd_jails}"
+
+run_rc_command "$1"
