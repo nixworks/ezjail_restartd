@@ -16,17 +16,25 @@ rcvar=ezjail_restartd_enable
 
 load_rc_config ${name}
 
-ezjail_cfgs="%%PREFIX%%/etc/ezjail"
+ezjail_cfgs="%%PREFIX%%/etc/ezjail/"
+ezjail_config="%%PREFIX%%/etc/ezjail.conf"
 required_dirs="${ezjail_cfgs}"
+required_files="${ezjail_config}"
 
 ezjail_restartd_find_jails() {
-    find -X ${ezjail_cfgs} -maxdepth 1 -type f \
-        -exec basename '{}' ';' 2>/dev/null | xargs
+    for jailcfg in `find -X ${ezjail_cfgs} -maxdepth 1 -type f | xargs`; do
+      . ${jailcfg}
+      jail_safename=${jailcfg##*/}
+      eval jail_rootdir=\"\$jail_${jail_safename}_rootdir\"
+      echo -n "${jail_rootdir##*/} "
+    done
 }
+
+. ${ezjail_config}
 
 : ${ezjail_restartd_enable:=NO}
 : ${ezjail_restartd_trigger:="var/reboot/trigger"} 
-: ${ezjail_restartd_base:="/usr/jails"}
+: ${ezjail_restartd_base:=$ezjail_jaildir}
 : ${ezjail_restartd_admin_cmd:="%%PREFIX%%/bin/ezjail-admin"}
 : ${ezjail_restartd_jails:=`ezjail_restartd_find_jails`}
 
