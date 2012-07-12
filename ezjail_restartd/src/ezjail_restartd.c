@@ -35,6 +35,7 @@ int main(int argc, char* const argv[]) {
         switch (c) {
         case 'p':
             pidfile = optarg;
+            break;
         case 'a':
             ezjail_admin = optarg;
             break;
